@@ -8,7 +8,17 @@ import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { db } from '$lib/server/db';
 import { user } from '$lib/server/db/schema';
 import { or, eq } from 'drizzle-orm';
-export const load = (async () => {
+import {
+	createSession,
+	generateSessionToken,
+	setSessionTokenCookie
+} from '$lib/server/auth';
+
+export const load = (async (event) => {
+	if (event.locals.user) {
+		console.log(event.locals.user);
+		return redirect(302, '/');
+	}
 	const form = await superValidate(zod(newUserSchema));
 
 	return { form };
@@ -23,9 +33,9 @@ export const actions: Actions = {
 
 		const { username, email, password } = form.data;
 		const passwordHash = await hashPassword(password);
-
+		const generatedUserId = generateUserId();
 		const newUserData = {
-			id: generateUserId(),
+			id: generatedUserId,
 			username,
 			email,
 			passwordHash
@@ -39,10 +49,17 @@ export const actions: Actions = {
 		if (existingUsers.length) {
 			return message(form, 'Email or Username is already used');
 		}
+		try {
+			await db.insert(user).values(newUserData);
 
-		await db.insert(user).values(newUserData);
+			const sessionToken = generateSessionToken();
+			const session = await createSession(sessionToken, generatedUserId);
+			setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		} catch (e) {
+			return message(form, 'Cannot create a new user');
+		}
 
-		return redirect(301, '/');
+		return redirect(302, '/');
 	}
 };
 
