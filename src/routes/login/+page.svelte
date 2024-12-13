@@ -1,10 +1,10 @@
 <svelte:head>
-	<title>Login</title>
+	<title>Lapis - Login</title>
 </svelte:head>
 
-<div class="md:w-96 mx-auto">
-	<form class="card bg-base-100 p-3 gap-3 shadow">
-		<p class="font-bold text-2xl mb-3 uppercase">Login</p>
+<div class="mx-auto md:w-96">
+	<form class="card bg-base-100 gap-3 p-3 shadow">
+		<p class="mb-3 text-2xl font-bold uppercase">Login</p>
 		<input type="text" placeholder="Email or Username" class="input input-bordered w-full" />
 		<input type="password" placeholder="Password" class="input input-bordered w-full" />
 		<button class="btn btn-primary">Login</button>
