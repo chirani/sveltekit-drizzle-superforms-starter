@@ -14,10 +14,12 @@ import {
 } from '$lib/server/auth';
 
 export const load = (async (event) => {
-	if (event.locals.user) {
-		console.log(event.locals.user);
-		return redirect(302, '/');
+	const { isLogged } = await event.parent();
+	if (isLogged) {
+		console.log(isLogged);
+		redirect(302, '/');
 	}
+
 	const form = await superValidate(zod(existingUserSchema));
 
 	return { form };
